@@ -1,5 +1,5 @@
 # DocAudit
-Auditing tool for large document datasets.  
+Data pipeline for auditing large document datasets.    
 The general concept can be applied to any type of document but the scenario that this project currently covers is email auditing.  
 
 # Dependencies  
