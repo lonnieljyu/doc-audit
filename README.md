@@ -17,9 +17,9 @@ A copy of the corpus can be found at https://archive.org/download/warandpeace026
 "index_upload_emails_pyspark.py" indexes the generated emails in the Elasticsearch server.
 
 # Pipeline  
-* Spark  
-* Elasticsearch  
-* Kibana 
+1. Spark  
+2. Elasticsearch  
+3. Kibana 
 
 # Demo  
 "url coming soon"
