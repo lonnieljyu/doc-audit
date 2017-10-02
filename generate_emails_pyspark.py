@@ -19,8 +19,8 @@ hdfs_working_directory = "/war_and_peace/"
 
 # Set number of books and chunks
 # One book is 16 MB
-# One collection of books is 5 GB = 5120 MB = 1024 MB * 5 = 16 MB * 64 * 5 = 16 MB * 2^6 * 5
-# The whole collection is 500 GB = 5 GB * 100
+# One chunk of books is 5 GB = 5120 MB = 1024 MB * 5 = 16 MB * 64 * 5 = 16 MB * 2^6 * 5
+# All chunks is 500 GB = 5 GB * 100
 times_double_rdd = 6
 number_of_doubled_rdd = 5
 number_of_books_in_chunk = 320
