@@ -1,8 +1,9 @@
-'''
-index_Upload_Email_By_Partitions_pyspark.py
+"""
+index_emails_pyspark.py
 
-Usage: spark-submit index_upload_emails_pyspark.py <hdfs server> <Elasticsearch hosts file> <ES username> <ES password>
-'''
+Usage: spark-submit index_emails_pyspark.py <hdfs server> 
+        <Elasticsearch hosts file> <ES username> <ES password>
+"""
 
 import sys
 from pyspark.sql import SparkSession
@@ -11,45 +12,50 @@ import json
 from elasticsearch import Elasticsearch, helpers
 
 # Set global variables
-number_of_chunks = 100
-index = 'war_and_peace'
-type = 'emails'
+NUMBER_OF_CHUNKS = 100
+INDEX = "war_and_peace_test"
+TYPE = "emails"
 
 # Set directory strings
-hdfs_server_address = "hdfs://" + sys.argv[1] + ":9000"
-hdfs_working_directory = "/war_and_peace_time/"
-input_directory = hdfs_server_address + hdfs_working_directory
+HDFS_SERVER_ADDRESS = "hdfs://" + sys.argv[1] + ":9000"
+HDFS_WORKING_DIRECCTORY = "/war_and_peace_time/"
+INPUT_DIRECTORY = HDFS_SERVER_ADDRESS + HDFS_WORKING_DIRECCTORY
 
-# Get Elasticsearch hosts addresses
-with open(sys.argv[2], 'r') as hosts_file:
-    es_server_addresses = [address.strip() for address in hosts_file]
-    
-# Get ES credentials
-es_username = sys.argv[3]
-es_password = sys.argv[4]
-
-def Get_Indexed_Email_Dict(email_json):
+def get_indexed_email_dict(email_json):
     email_dict = json.loads(email_json)
-    email_dict['_index'] = index
-    email_dict['_type'] = type
-    email_dict['_id'] = email_dict['Absolute Id']
-    email_dict['date'] = email_dict['Datetime']
-    del email_dict['Datetime']
+    email_dict["_index"] = INDEX
+    email_dict["_type"] = TYPE
+    email_dict["_id"] = email_dict["Absolute Id"]
+    email_dict["date"] = email_dict["Datetime"]
+    del email_dict["Datetime"]
     return email_dict
 
-def Upload_Email_By_Partition(es_server_addresses, es_username, es_password, email_jsons):    
-    es = Elasticsearch(es_server_addresses, http_auth=(es_username, es_password), sniff_on_start=True, sniff_on_connection_fail=True, sniffer_timeout=60)
-    email_dicts = [Get_Indexed_Email_Dict(email_json) for email_json in email_jsons]
+def bulk_index_emails_by_partition(es_server_addresses, es_username, 
+        es_password, email_jsons):    
+    es = Elasticsearch(es_server_addresses, http_auth=(es_username, es_password), 
+        sniff_on_start=True, sniff_on_connection_fail=True, sniffer_timeout=60)
+    email_dicts = [get_indexed_email_dict(email_json) for email_json in email_jsons]
     helpers.bulk(es, email_dicts)
+
+if __name__ == "__main__":
     
-### Main
-
-# Set up spark configuration
-conf = SparkConf().setAppName("Index and Upload Emails")
-sc = SparkContext(conf=conf)
-spark = SparkSession(sc)
-
-for chunk_index in range(number_of_chunks):
-    input_working_directory = input_directory + "emails" + str(chunk_index)
-    rdd = sc.textFile(input_working_directory)
-    rdd.foreachPartition(lambda email_jsons: Upload_Email_By_Partition(es_server_addresses, es_username, es_password, email_jsons))
+    # Get Elasticsearch hosts addresses
+    with open(sys.argv[2], "r") as hosts_file:
+        es_server_addresses = [address.strip() for address in hosts_file]
+        
+    # Get ES credentials
+    es_username = sys.argv[3]
+    es_password = sys.argv[4]
+    
+    # Set up spark configuration
+    conf = SparkConf().setAppName("Index Emails")
+    sc = SparkContext(conf=conf)
+    spark = SparkSession(sc)
+    
+    for chunk_index in range(NUMBER_OF_CHUNKS):
+        input_working_directory = INPUT_DIRECTORY + "emails" + str(chunk_index)
+        rdd = sc.textFile(input_working_directory)
+        rdd.foreachPartition(lambda email_jsons: 
+            bulk_index_emails_by_partition(es_server_addresses, es_username, es_password, 
+                email_jsons))
+        
