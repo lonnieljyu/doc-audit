@@ -27,5 +27,4 @@ Elasticsearch GET Request: curl -XGET localhost:9200/index/type/id
 3. Kibana 
 
 # Demo  
-"url coming soon"
-  
+https://youtu.be/HlVocr7P7Ik
